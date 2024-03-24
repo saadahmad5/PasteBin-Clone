@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import Head from "next/head";
 import styles from "../styles/Home.module.css";
 import axios from "axios";
-import copyToClipboard from "../helpers/util";
 
 function GetPastePage() {
   const router = useRouter();
@@ -46,10 +45,6 @@ function GetPastePage() {
             value={content?.content}
             disabled={true}
           />
-          <div style={{ marginTop: "24px" }} />
-          <button onClick={() => copyToClipboard(content?.content)}>
-            Copy Text
-          </button>
         </div>
       </main>
 

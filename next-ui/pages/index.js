@@ -2,7 +2,6 @@ import { useState } from "react";
 import Head from "next/head";
 import styles from "../styles/Home.module.css";
 import axios from "axios";
-import copyToClipboard from '../helpers/util';
 
 export default function Home() {
   const [content, setContent] = useState("");
@@ -60,7 +59,6 @@ export default function Home() {
                 value={document.location.origin + "/" + guid}
                 style={{ width: "400px" }}
               />
-              <button onClick={() => copyToClipboard(document.location.origin + "/" + guid)}>Copy URL</button>
               <button onClick={() => window.open(document.location.origin + "/" + guid, '_blank')}>Open Link</button>
             </>
           )}

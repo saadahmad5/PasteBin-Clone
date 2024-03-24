@@ -49,6 +49,9 @@ jobs:
     needs: build
 
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
       - name: Log in ACR
         run: |
           echo "az acr login --name ${{ secrets.REGISTRY_URL }} --username ${{ secrets.REGISTRY_USR }} --password ${{ secrets.REGISTRY_PWD }}"

@@ -81,10 +81,13 @@ jobs:
           ls -la
           cd manifests
           ls -la
-          echo "sed -i 's/{{IMAGE_TAG}}/$GITHUB_RUN_NUMBER/g' deployment.yaml"
-          sed -i 's/{{IMAGE_TAG}}/$GITHUB_RUN_NUMBER/g' deployment.yaml
+          echo "sed -i 's|{{UI_IMAGE_TAG}}|$GITHUB_RUN_NUMBER|g' deployment.yaml"
+          sed -i 's|{{UI_IMAGE_TAG}}|$GITHUB_RUN_NUMBER|g' deployment.yaml
+          echo "sed -i 's|{{SVC_IMAGE_TAG}}|$GITHUB_RUN_NUMBER|g' deployment.yaml"
+          sed -i 's|{{SVC_IMAGE_TAG}}|$GITHUB_RUN_NUMBER|g' deployment.yaml
           more deployment.yaml
 
       - name: Deploy to AKS
         run: |
           echo "kubectl apply -f ./manifests"
+          kubectl apply -f ./manifests

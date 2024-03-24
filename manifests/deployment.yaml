@@ -1,0 +1,64 @@
+- apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    name: next-ui
+    namespace: default
+  spec:
+    replicas: 1
+    selector:
+      matchLabels:
+        app: next-ui
+    template:
+      metadata:
+        labels:
+          app: next-ui
+      spec:
+        nodeSelector:
+          beta.kubernetes.io/os: linux
+        containers:
+          - name: next-ui
+            image: saadcnaprj2cr.azurecr.io/pastebin-clone/next-ui:{{IMAGE_TAG}}
+            env:
+              - name: NEXT_PUBLIC_SERVICE_HOST
+                value: "http://flask-svc:5000"
+            resources:
+              requests:
+                cpu: 100m
+                memory: 128Mi
+              limits:
+                cpu: 250m
+                memory: 256Mi
+            ports:
+              - containerPort: 3000
+                name: pastebin-ui
+---
+- apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    name: flask-svc
+    namespace: default
+  spec:
+    replicas: 1
+    selector:
+      matchLabels:
+        app: flask-svc
+    template:
+      metadata:
+        labels:
+          app: flask-svc
+      spec:
+        nodeSelector:
+          beta.kubernetes.io/os: linux
+        containers:
+          - name: flask-svc
+            image: saadcnaprj2cr.azurecr.io/pastebin-clone/flask-svc:{{IMAGE_TAG}}
+            resources:
+              requests:
+                cpu: 100m
+                memory: 128Mi
+              limits:
+                cpu: 250m
+                memory: 256Mi
+            ports:
+              - containerPort: 5000
+                name: pastebin-svc

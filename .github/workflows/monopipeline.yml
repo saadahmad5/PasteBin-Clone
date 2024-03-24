@@ -1,0 +1,84 @@
+name: Build - Publish - Deploy PasteBin Clone
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Build Docker image for Service
+        run: |
+          ls -la
+          cd flask-svc
+          ls -la
+          echo "docker build -f ./Dockerfile -t ${{ secrets.REGISTRY_URL }}/pastebin-clone/flask-svc:$GITHUB_RUN_NUMBER ."
+          docker build -f ./Dockerfile -t ${{ secrets.REGISTRY_URL }}/pastebin-clone/flask-svc:$GITHUB_RUN_NUMBER .
+
+      - name: Build Docker image for UI
+        run: |
+          ls -la
+          cd next-ui
+          ls -la
+          echo "docker build -f ./Dockerfile -t ${{ secrets.REGISTRY_URL }}/pastebin-clone/next-ui:$GITHUB_RUN_NUMBER ."
+          docker build -f ./Dockerfile -t ${{ secrets.REGISTRY_URL }}/pastebin-clone/next-ui:$GITHUB_RUN_NUMBER .
+
+      - name: Log in Azure Container Registry
+        run: |
+          echo "az acr login --name ${{ secrets.REGISTRY_URL }} --username ${{ secrets.REGISTRY_USR }} --password ${{ secrets.REGISTRY_PWD }}"
+          az acr login --name ${{ secrets.REGISTRY_URL }} --username ${{ secrets.REGISTRY_USR }} --password ${{ secrets.REGISTRY_PWD }}
+
+      - name: Publish Svc Docker image to ACR
+        run: |
+          echo "docker push ${{ secrets.REGISTRY_URL }}/pastebin-clone/flask-svc:$GITHUB_RUN_NUMBER"
+          docker push ${{ secrets.REGISTRY_URL }}/pastebin-clone/flask-svc:$GITHUB_RUN_NUMBER
+      
+      - name: Publish UI Docker image to ACR
+        run: |
+          echo "docker push ${{ secrets.REGISTRY_URL }}/pastebin-clone/next-ui:$GITHUB_RUN_NUMBER"
+          docker push ${{ secrets.REGISTRY_URL }}/pastebin-clone/next-ui:$GITHUB_RUN_NUMBER
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - name: Log in ACR
+        run: |
+          echo "az acr login --name ${{ secrets.REGISTRY_URL }} --username ${{ secrets.REGISTRY_USR }} --password ${{ secrets.REGISTRY_PWD }}"
+          az acr login --name ${{ secrets.REGISTRY_URL }} --username ${{ secrets.REGISTRY_USR }} --password ${{ secrets.REGISTRY_PWD }}
+
+      - name: Login Azure Kubernetes Service
+        uses: azure/k8s-set-context@v1
+        with:
+          method: kubeconfig
+          kubeconfig: ${{ secrets.KUBE_CONFIG }}
+
+      - name: Test AKS
+        run: |
+          echo "kubectl auth can-i get namespaces"
+          kubectl auth can-i get namespaces
+          echo "kubectl auth can-i get pods --namespace default"
+          kubectl auth can-i get pods --namespace default
+          echo "kubectl get namespaces"
+          kubectl get namespaces
+          echo "kubectl get pods --namespace azure-vote"
+          kubectl get pods --namespace azure-vote
+          echo "kubectl get pods --namespace default"
+          kubectl get pods --namespace default
+
+      - name: Edit image tag in manifest
+        run: |
+          echo "sed -i 's/{{IMAGE_TAG}}/$GITHUB_RUN_NUMBER/g' ./manifests/deployment.yaml"
+          sed -i 's/{{IMAGE_TAG}}/$GITHUB_RUN_NUMBER/g' ./manifests/deployment.yaml
+          more ./manifests/deployment.yaml
+
+      - name: Deploy to AKS
+        run: |
+          echo "kubectl apply -f ./manifests"

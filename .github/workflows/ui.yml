@@ -6,34 +6,34 @@ on:
       - main
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
+  # build:
+  #   runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v2
 
-      - name: Build Docker image
-        run: |
-          ls -la
-          cd flask-svc
-          ls -la
-          echo "docker build -f ./Dockerfile -t ${{ secrets.REGISTRY_URL }}/pastebin-clone/flask-svc:$GITHUB_RUN_NUMBER ."
-          docker build -f ./Dockerfile -t ${{ secrets.REGISTRY_URL }}/pastebin-clone/flask-svc:$GITHUB_RUN_NUMBER .
+  #     - name: Build Docker image
+  #       run: |
+  #         ls -la
+  #         cd flask-svc
+  #         ls -la
+  #         echo "docker build -f ./Dockerfile -t ${{ secrets.REGISTRY_URL }}/pastebin-clone/flask-svc:$GITHUB_RUN_NUMBER ."
+  #         docker build -f ./Dockerfile -t ${{ secrets.REGISTRY_URL }}/pastebin-clone/flask-svc:$GITHUB_RUN_NUMBER .
 
-      - name: Log in Azure Container Registry
-        run: |
-          echo "az acr login --name ${{ secrets.REGISTRY_URL }} --username ${{ secrets.REGISTRY_USR }} --password ${{ secrets.REGISTRY_PWD }}"
-          az acr login --name ${{ secrets.REGISTRY_URL }} --username ${{ secrets.REGISTRY_USR }} --password ${{ secrets.REGISTRY_PWD }}
+  #     - name: Log in Azure Container Registry
+  #       run: |
+  #         echo "az acr login --name ${{ secrets.REGISTRY_URL }} --username ${{ secrets.REGISTRY_USR }} --password ${{ secrets.REGISTRY_PWD }}"
+  #         az acr login --name ${{ secrets.REGISTRY_URL }} --username ${{ secrets.REGISTRY_USR }} --password ${{ secrets.REGISTRY_PWD }}
 
-      - name: Publish Docker image to ACR
-        run: |
-          echo "docker push ${{ secrets.REGISTRY_URL }}/pastebin-clone/flask-svc:$GITHUB_RUN_NUMBER"
-          docker push ${{ secrets.REGISTRY_URL }}/pastebin-clone/flask-svc:$GITHUB_RUN_NUMBER
+  #     - name: Publish Docker image to ACR
+  #       run: |
+  #         echo "docker push ${{ secrets.REGISTRY_URL }}/pastebin-clone/flask-svc:$GITHUB_RUN_NUMBER"
+  #         docker push ${{ secrets.REGISTRY_URL }}/pastebin-clone/flask-svc:$GITHUB_RUN_NUMBER
 
   deploy:
     runs-on: ubuntu-latest
-    needs: build
+    # needs: build
 
     steps:
       - name: Log in ACR
@@ -42,12 +42,20 @@ jobs:
           az acr login --name ${{ secrets.REGISTRY_URL }} --username ${{ secrets.REGISTRY_USR }} --password ${{ secrets.REGISTRY_PWD }}
 
       - name: Login Azure Kubernetes Service
-        uses: azure/k8s-login@v1
+        # uses: azure/k8s-login@v1
+        uses: azure/k8s-set-context@v1
         with:
+          method: kubeconfig
           kubeconfig: ${{ secrets.KUBE_CONFIG }}
-          cluster-name: saad-cna-prj2-aks
-          namespace: default
+
+      - name: Test AKS
+        run: |
+          echo "kubectl auth can-i get namespaces"
+          kubectl auth can-i get namespaces
+          echo "kubectl auth can-i get pods --namespace default"
+          kubectl auth can-i get pods --namespace default
 
       - name: Deploy to AKS
         run: |
-          kubectl set image deployment/flask-svc pastebinSvc=${{ secrets.REGISTRY_URL }}/pastebin-clone/flask-svc:$GITHUB_RUN_NUMBER
+          echo "kubectl set image deployment/flask-svc pastebinSvc=${{ secrets.REGISTRY_URL }}/pastebin-clone/flask-svc:$GITHUB_RUN_NUMBER"
+          kubectl set image deployment/flask-svc pastebinSvc=${{ secrets.REGISTRY_URL }}/pastebin-clone/flask-svc:6

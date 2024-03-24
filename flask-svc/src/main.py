@@ -5,7 +5,7 @@ import json
 import uuid
 
 app = Flask(__name__)
-CORS(app, origins=['http://localhost:3000', 'http://localhost:3001', 'http://172.212.4.29', 'http://4.156.68.159'])
+CORS(app, origins=['http://localhost:3000', 'http://localhost:3001', 'http://172.212.4.29', 'http://172.171.162.197'])
 
 REDIS_ENDPOINT = "saad-cna-prj2-rc.redis.cache.windows.net"
 REDIS_PORT = 6379

@@ -13,14 +13,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Show and Switch Directory
+      - name: Build Docker image
         run: |
           ls -la
           cd flask-svc
           ls -la
-
-      - name: Build Docker image
-        run: |
           echo "docker build -f ./Dockerfile -t ${{ secrets.REGISTRY_URL }}/pastebin-clone/flask-svc:$GITHUB_RUN_NUMBER ."
           docker build -f ./Dockerfile -t ${{ secrets.REGISTRY_URL }}/pastebin-clone/flask-svc:$GITHUB_RUN_NUMBER .
 

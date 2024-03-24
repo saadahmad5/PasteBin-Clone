@@ -21,7 +21,8 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build -t ${{ secrets.REGISTRY_URL }}/pastebin-clone/flask-svc:$GITHUB_RUN_NUMBER .
+          echo "docker build -f ./Dockerfile -t ${{ secrets.REGISTRY_URL }}/pastebin-clone/flask-svc:$GITHUB_RUN_NUMBER ."
+          docker build -f ./Dockerfile -t ${{ secrets.REGISTRY_URL }}/pastebin-clone/flask-svc:$GITHUB_RUN_NUMBER .
 
       - name: Log in ACR
         run: |

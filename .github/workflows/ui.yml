@@ -17,10 +17,11 @@ jobs:
         run: |
           ls -la
           cd flask-svc
+          ls -la
 
       - name: Build Docker image
         run: |
-          docker build -t ${{ secrets.REGISTRY_URL }}/pastebin-clone/flask-svc:$(GITHUB_RUN_NUMBER) .
+          docker build -t ${{ secrets.REGISTRY_URL }}/pastebin-clone/flask-svc:$GITHUB_RUN_NUMBER .
 
       - name: Log in ACR
         run: |

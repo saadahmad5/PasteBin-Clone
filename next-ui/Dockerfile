@@ -1,7 +1,7 @@
 FROM node:18-alpine
 
 # ENV NEXT_PUBLIC_SERVICE_HOST "http://localhost:5001"
-ENV NEXT_PUBLIC_SERVICE_HOST "http://flask-svc:5000"
+ENV NEXT_PUBLIC_SERVICE_HOST "http://172.171.165.45:5000"
 
 WORKDIR /app
 COPY package.json package-lock.json ./

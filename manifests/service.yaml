@@ -4,6 +4,7 @@ metadata:
   name: flask-svc
   namespace: default
 spec:
+  type: LoadBalancer
   ports:
     - port: 5000
   selector:

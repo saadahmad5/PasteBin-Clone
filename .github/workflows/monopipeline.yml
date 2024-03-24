@@ -18,31 +18,26 @@ jobs:
           ls -la
           cd flask-svc
           ls -la
-          echo "docker build -f ./Dockerfile -t ${{ secrets.REGISTRY_URL }}/pastebin-clone/flask-svc:$GITHUB_RUN_NUMBER ."
-          docker build -f ./Dockerfile -t ${{ secrets.REGISTRY_URL }}/pastebin-clone/flask-svc:$GITHUB_RUN_NUMBER .
+          echo "docker build -f ./Dockerfile -t saadahm/flask-svc:$GITHUB_RUN_NUMBER ."
+          docker build -f ./Dockerfile -t saadahm/flask-svc:$GITHUB_RUN_NUMBER .
 
       - name: Build Docker image for UI
         run: |
           ls -la
           cd next-ui
           ls -la
-          echo "docker build -f ./Dockerfile -t ${{ secrets.REGISTRY_URL }}/pastebin-clone/next-ui:$GITHUB_RUN_NUMBER ."
-          docker build -f ./Dockerfile -t ${{ secrets.REGISTRY_URL }}/pastebin-clone/next-ui:$GITHUB_RUN_NUMBER .
-
-      - name: Log in Azure Container Registry
-        run: |
-          echo "az acr login --name ${{ secrets.REGISTRY_URL }} --username ${{ secrets.REGISTRY_USR }} --password ${{ secrets.REGISTRY_PWD }}"
-          az acr login --name ${{ secrets.REGISTRY_URL }} --username ${{ secrets.REGISTRY_USR }} --password ${{ secrets.REGISTRY_PWD }}
+          echo "docker build -f ./Dockerfile -t saadahm/next-ui:$GITHUB_RUN_NUMBER ."
+          docker build -f ./Dockerfile -t saadahm/next-ui:$GITHUB_RUN_NUMBER .
 
       - name: Publish Svc Docker image to ACR
         run: |
-          echo "docker push ${{ secrets.REGISTRY_URL }}/pastebin-clone/flask-svc:$GITHUB_RUN_NUMBER"
-          docker push ${{ secrets.REGISTRY_URL }}/pastebin-clone/flask-svc:$GITHUB_RUN_NUMBER
+          echo "docker push saadahm/flask-svc:$GITHUB_RUN_NUMBER"
+          docker push saadahm/flask-svc:$GITHUB_RUN_NUMBER
       
       - name: Publish UI Docker image to ACR
         run: |
-          echo "docker push ${{ secrets.REGISTRY_URL }}/pastebin-clone/next-ui:$GITHUB_RUN_NUMBER"
-          docker push ${{ secrets.REGISTRY_URL }}/pastebin-clone/next-ui:$GITHUB_RUN_NUMBER
+          echo "docker push saadahm/next-ui:$GITHUB_RUN_NUMBER"
+          docker push saadahm/next-ui:$GITHUB_RUN_NUMBER
 
   deploy:
     runs-on: ubuntu-latest
@@ -51,11 +46,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-
-      - name: Log in ACR
-        run: |
-          echo "az acr login --name ${{ secrets.REGISTRY_URL }} --username ${{ secrets.REGISTRY_USR }} --password ${{ secrets.REGISTRY_PWD }}"
-          az acr login --name ${{ secrets.REGISTRY_URL }} --username ${{ secrets.REGISTRY_USR }} --password ${{ secrets.REGISTRY_PWD }}
 
       - name: Login Azure Kubernetes Service
         uses: azure/k8s-set-context@v1

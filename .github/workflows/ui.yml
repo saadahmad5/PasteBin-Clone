@@ -1,0 +1,52 @@
+name: Build - Publish - Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Show and Switch Directory
+        run: |
+          ls -la
+          cd flask-svc
+
+      - name: Build Docker image
+        run: |
+          docker build -t ${{ secrets.REGISTRY_URL }}/pastebin-clone/flask-svc:$(GITHUB_RUN_NUMBER) .
+
+      - name: Log in ACR
+        run: |
+          az acr login --name ${{ secrets.REGISTRY_URL }} --username ${{ secrets.REGISTRY_USR }} --password ${{ secrets.REGISTRY_PWD }}
+
+      - name: Publish Docker image to ACR
+        run: |
+          docker push ${{ secrets.REGISTRY_URL }}/pastebin-clone/flask-svc:$(GITHUB_RUN_NUMBER)
+
+  # deploy:
+  #   runs-on: ubuntu-latest
+  #   needs: build
+
+  #   steps:
+  #     - name: Login to Azure Container Registry
+  #       uses: azure/login@v1
+  #       with:
+  #         creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+  #     - name: Login to Azure Kubernetes Service
+  #       uses: azure/aks-set-context@v1
+  #       with:
+  #         creds: ${{ secrets.AZURE_CREDENTIALS }}
+  #         cluster-name: your-aks-cluster-name
+  #         resource-group: your-aks-resource-group
+
+  #     - name: Deploy to AKS
+  #       run: |
+  #         kubectl set image deployment/your-deployment-name your-container-name=${{ secrets.REGISTRY_URL }}/${{ github.repository }}:${{ github.sha }}

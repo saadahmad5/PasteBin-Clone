@@ -42,7 +42,6 @@ jobs:
           az acr login --name ${{ secrets.REGISTRY_URL }} --username ${{ secrets.REGISTRY_USR }} --password ${{ secrets.REGISTRY_PWD }}
 
       - name: Login Azure Kubernetes Service
-        # uses: azure/k8s-login@v1
         uses: azure/k8s-set-context@v1
         with:
           method: kubeconfig
@@ -54,8 +53,14 @@ jobs:
           kubectl auth can-i get namespaces
           echo "kubectl auth can-i get pods --namespace default"
           kubectl auth can-i get pods --namespace default
+          echo "kubectl get namespaces"
+          kubectl get namespaces
+          echo "kubectl get pods --namespace azure-vote"
+          kubectl get pods --namespace azure-vote
+          echo "kubectl get pods --namespace default"
+          kubectl get pods --namespace default
 
-      - name: Deploy to AKS
-        run: |
-          echo "kubectl set image deployment/flask-svc pastebinSvc=${{ secrets.REGISTRY_URL }}/pastebin-clone/flask-svc:$GITHUB_RUN_NUMBER"
-          kubectl set image deployment/flask-svc pastebinSvc=${{ secrets.REGISTRY_URL }}/pastebin-clone/flask-svc:6
+      # - name: Deploy to AKS
+      #   run: |
+      #     echo "kubectl set image deployment/flask-svc pastebinSvc=${{ secrets.REGISTRY_URL }}/pastebin-clone/flask-svc:$GITHUB_RUN_NUMBER"
+      #     kubectl set image deployment/flask-svc pastebinSvc=${{ secrets.REGISTRY_URL }}/pastebin-clone/flask-svc:6

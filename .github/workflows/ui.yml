@@ -21,8 +21,9 @@ jobs:
           echo "docker build -f ./Dockerfile -t ${{ secrets.REGISTRY_URL }}/pastebin-clone/flask-svc:$GITHUB_RUN_NUMBER ."
           docker build -f ./Dockerfile -t ${{ secrets.REGISTRY_URL }}/pastebin-clone/flask-svc:$GITHUB_RUN_NUMBER .
 
-      - name: Log in ACR
+      - name: Log in Azure Container Registry
         run: |
+          echo "az acr login --name ${{ secrets.REGISTRY_URL }} --username ${{ secrets.REGISTRY_USR }} --password ${{ secrets.REGISTRY_PWD }}"
           az acr login --name ${{ secrets.REGISTRY_URL }} --username ${{ secrets.REGISTRY_USR }} --password ${{ secrets.REGISTRY_PWD }}
 
       - name: Publish Docker image to ACR
@@ -30,23 +31,23 @@ jobs:
           echo "docker push ${{ secrets.REGISTRY_URL }}/pastebin-clone/flask-svc:$GITHUB_RUN_NUMBER"
           docker push ${{ secrets.REGISTRY_URL }}/pastebin-clone/flask-svc:$GITHUB_RUN_NUMBER
 
-  # deploy:
-  #   runs-on: ubuntu-latest
-  #   needs: build
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
 
-  #   steps:
-  #     - name: Login to Azure Container Registry
-  #       uses: azure/login@v1
-  #       with:
-  #         creds: ${{ secrets.AZURE_CREDENTIALS }}
+    steps:
+      - name: Log in ACR
+        run: |
+          echo "az acr login --name ${{ secrets.REGISTRY_URL }} --username ${{ secrets.REGISTRY_USR }} --password ${{ secrets.REGISTRY_PWD }}"
+          az acr login --name ${{ secrets.REGISTRY_URL }} --username ${{ secrets.REGISTRY_USR }} --password ${{ secrets.REGISTRY_PWD }}
 
-  #     - name: Login to Azure Kubernetes Service
-  #       uses: azure/aks-set-context@v1
-  #       with:
-  #         creds: ${{ secrets.AZURE_CREDENTIALS }}
-  #         cluster-name: your-aks-cluster-name
-  #         resource-group: your-aks-resource-group
+      - name: Login Azure Kubernetes Service
+        uses: azure/k8s-login@v1
+        with:
+          kubeconfig: ${{ secrets.KUBE_CONFIG }}
+          cluster-name: saad-cna-prj2-aks
+          namespace: default
 
-  #     - name: Deploy to AKS
-  #       run: |
-  #         kubectl set image deployment/your-deployment-name your-container-name=${{ secrets.REGISTRY_URL }}/${{ github.repository }}:${{ github.sha }}
+      - name: Deploy to AKS
+        run: |
+          kubectl set image deployment/flask-svc pastebinSvc=${{ secrets.REGISTRY_URL }}/pastebin-clone/flask-svc:$GITHUB_RUN_NUMBER
